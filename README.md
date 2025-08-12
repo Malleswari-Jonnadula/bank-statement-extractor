@@ -1,4 +1,4 @@
-# Bank Statement Extractor (Streamlit + Gemini)
+# Bank Statement Extractor: PDF Data Extraction with Python & Vertex AI
 
 ## What it does
 - Extracts account holder & bank details and transactions (tabular) from bank statement PDFs.
@@ -16,24 +16,22 @@
 ## Run API locally
 1. pip install -r requirements.txt
 2. uvicorn api:app --reload
-3. The API will run at: `http://localhost:8000/docs` 
+3. Access the interactive API docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ## API Usage
-1. Endpoint : `POST/extract`
-   Content-Type: multipart/form-data
-   Field: file (PDF file)
-   ## Example cURL:
-   curl -X 'POST' \
-    'http://localhost:8000/extract' \
-    -H 'accept: application/json' \
-    -H 'Content-Type: multipart/form-data' \
-    -F 'file=@Dummy-Bank-Statement.pdf;type=application/pdf'
+
+**Endpoint:** `POST /extract`  
+**Content-Type:** `multipart/form-data`  
+**Field:** `file` (PDF file)
+
+### Example cURL request:
+
+```bash
+curl -X POST "http://localhost:8000/extract" \
+-H "accept: application/json" \
+-H "Content-Type: multipart/form-data" \
+-F "file=@Dummy-Bank-Statement.pdf;type=application/pdf"
+```
 
 ## Deployment
 - Streamlit Cloud for `app.py`
-- Deploy `api.py` on Render/Heroku.
-
-## Files
-- extraction.py — core extraction functions
-- app.py — Streamlit app
-- api.py — FastAPI upload endpoint
