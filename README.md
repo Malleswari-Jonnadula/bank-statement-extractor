@@ -18,9 +18,9 @@ Uses:
 
 ## 📂 Project Structure
 
-├── app.py # Streamlit web app
-├── api.py # FastAPI backend 
-├── requirements.txt # Python dependencies
+├── app.py # Streamlit web app   
+├── api.py # FastAPI backend    
+├── requirements.txt # Python dependencies   
 ├── README.md # Documentation
 
 ---
@@ -46,7 +46,7 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-### 4.Configure Environment Variables
+### 4. Configure Environment Variables
 Create a .env file in the project root :
 ```bash
 GOOGLE_API_KEY=your_google_api_key_here
@@ -88,9 +88,9 @@ curl -X POST "http://localhost:8000/extract" \
 - Go to Streamlit Cloud.
 - Click "New App" → select your repo and branch.
 - Set Secrets in Streamlit Cloud:
-  In Settings → Secrets, add:
+  In Settings → Secrets, add:   
     GOOGLE_API_KEY="your_google_api_key_here"
-- Deploy! Your public app link will look like:
+- Deploy! Your public app link will look like:   
   https://your-app-name.streamlit.app/ 
 
   ---
