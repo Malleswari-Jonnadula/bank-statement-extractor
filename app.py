@@ -7,7 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
+if not GEMINI_API_KEY:
+    st.error("❌ GOOGLE_API_KEY not found! Set it in .env (local) or Streamlit Secrets (cloud).")
+    st.stop()
 client = genai.Client(api_key=GEMINI_API_KEY)
 # --- Pythonic extraction of transactions ---
 def extract_transactions(pdf_file):
@@ -30,11 +33,12 @@ def extract_transactions(pdf_file):
                         "Copyright", "Notes", "Bank Statement", "Dummy Bank Statement"
                     ]):
                         continue
-                    all_rows.append(row)
+                    # ✅ Only keep rows that match the expected column count
+                    if len(row) == len(columns):
+                        all_rows.append(row)
 
     if columns and all_rows:
-        df = pd.DataFrame(all_rows, columns=columns)
-        return df
+        return pd.DataFrame(all_rows, columns=columns)
     return None
 
 # --- Pythonic extraction of full text for Gemini ---
