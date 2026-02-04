@@ -83,16 +83,4 @@ curl -X POST "http://localhost:8000/extract" \
 
 ---
 
-## 4. Deploy on Streamlit Cloud
-- Push your code to GitHub
-- Go to Streamlit Cloud.
-- Click "New App" → select your repo and branch.
-- Set Secrets in Streamlit Cloud:
-  In Settings → Secrets, add:   
-    GOOGLE_API_KEY="your_google_api_key_here"
-- Deploy! Your public app link will look like:   
-  https://your-app-name.streamlit.app/ 
-
-  ---
-
   
