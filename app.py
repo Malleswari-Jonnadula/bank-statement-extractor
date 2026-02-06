@@ -148,10 +148,10 @@ if uploaded_file:
     text_content = extract_text(uploaded_file)
 
     if transactions_df is not None and not transactions_df.empty:
-        st.subheader("Transactions Table (Python)")
+        st.subheader("Transactions")
         st.dataframe(transactions_df)
         csv = transactions_df.to_csv(index=False).encode("utf-8")
-        st.download_button("Download Transactions CSV", csv, "transactions.csv", "text/csv")
+        st.download_button("Download CSV", csv, "transactions.csv", "text/csv")
 
         st.subheader("Account Holder & Bank Details")
         with st.spinner("Classifying with Gemini..."):
