@@ -1,27 +1,43 @@
-# 🏦Bank Statement Extractor: PDF Data Extraction with Python & Vertex AI
+# 🏦Bank Statement Extractor: PDF Data Extraction with Python & LLMs
 
-Extracts **account holder details, bank details, and transaction tables** from bank statement PDFs. 
-Uses:
-- **Pythonic extraction** (via `pdfplumber`) for structured tables.
-- **Gemini (Google AI)** for fallback extraction when transactions aren’t found.
+A **Streamlit-based web application** that extracts **account holder details, bank details, and transaction tables** from bank statement PDFs using Python and a Large Language Model (LLM).
+The system combines **rule-based PDF parsing** with **LLM-powered fallback extraction** for unstructured documents.
 
 ---
 
 ## 🚀 Features
 - Upload PDF bank statements via **Streamlit UI**.
+- Extracts:
+  - Account Holder Details
+  - Bank Account Details
+  - Transaction Tables
 - Automatically detects and parses transactions.
-- Falls back to **Google Gemini** AI for unstructured PDFs.
+- Uses **Python-based extraction (`pdfplumber`)** for structured PDFs
+- Uses **Groq LLM (LLaMA 3.1)** for intelligent extraction from unstructured text
+- Download extracted transactions as **CSV**
 - Optionally provides a **FastAPI endpoint** for programmatic uploads.
-- Works **locally** and on **Streamlit Cloud**.
+- Works **locally** and deployed on **Streamlit Cloud**.
 
 ---
 
+## 💡Tech Stack
+
+- **Python**
+- **Streamlit**
+- **pdfplumber**
+- **Groq LLM (LLaMA 3.1)**
+- **Pandas**
+- **FastAPI**
+
+---
+
+
 ## 📂 Project Structure
 
-├── app.py # Streamlit web app   
-├── api.py # FastAPI backend    
+├── app.py           # Streamlit web app   
+├── api.py           # FastAPI backend    
 ├── requirements.txt # Python dependencies   
-├── README.md # Documentation
+├── README.md        # Documentation
 
 ---
 
@@ -46,10 +62,10 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-### 4. Configure Environment Variables
-Create a .env file in the project root :
+### 4. Configure API Key (Groq)
+Create a .streamlit/secrets.toml file (locally):
 ```bash
-GOOGLE_API_KEY=your_google_api_key_here
+GROQ_API_KEY = "your_groq_api_key_here"
 ```
 
 ---
@@ -83,4 +99,21 @@ curl -X POST "http://localhost:8000/extract" \
 
 ---
 
-  
+## 🧠 Design Highlights
+
+- **Modular LLM layer** – Easy to swap LLM providers (Gemini → Groq → others) without changing core logic  
+- **Hybrid extraction approach** – Combines rule-based PDF parsing with LLM-based fallback extraction  
+- **Robust JSON parsing & validation** – Ensures structured and reliable output from LLM responses  
+- **Cloud-deployable architecture** – Designed to run seamlessly on Streamlit Cloud  
+
+---
+
+## 📌 Future Improvements
+
+- **Schema-based JSON validation** for stricter data consistency  
+- **OCR support** for scanned or image-based bank statements  
+- **Multi-bank format optimization** to handle different statement layouts  
+- **Caching mechanisms** to improve performance and reduce repeated LLM calls  
+
+---
+
