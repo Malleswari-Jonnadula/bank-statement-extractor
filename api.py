@@ -1,14 +1,15 @@
 from fastapi import FastAPI, File, UploadFile
 import pdfplumber
 import pandas as pd
-from google import genai
+from groq import Groq
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=GEMINI_API_KEY)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+groq_client = Groq(api_key=GROQ_API_KEY)
+
 
 app = FastAPI()
 
@@ -48,34 +49,31 @@ def extract_text(pdf_file):
     return text_content
 
 # --- Gemini classification ---
-def classify_with_gemini(text, include_transactions=False):
+def classify_with_llm(text, include_transactions=False):
     if include_transactions:
         prompt = f"""
-        You are given bank statement text.
-        Extract:
-        1. Account Holder Details: Name, Address, Contact Nr, Email
-        2. Bank Account Details: Bank Name, Account Nr, IFSC Code, Bank Branch Address
-        3. Tabular Data of Transactions
-        Return in JSON format with keys: account_holder_details, bank_account_details, transactions.
+        Extract only valid JSON from this bank statement text.
+        Give account holder details,bank account details and transactions.
+        Return keys: account_holder_details, bank_account_details, transactions.
         Text:
         {text}
         """
     else:
         prompt = f"""
-        You are given bank statement text.
-        Extract:
-        1. Account Holder Details: Name, Address, Contact Nr, Email
-        2. Bank Account Details: Bank Name, Account Nr, IFSC Code, Bank Branch Address
-        Return in JSON format with keys: account_holder_details, bank_account_details.
+        Extract only valid JSON from this bank statement text.
+        Give account holder details related and bank account details related.
+        Return keys: account_holder_details, bank_account_details.
         Text:
         {text}
         """
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+    response = groq_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
     )
-    return response.candidates[0].content.parts[0].text
+
+    return response.choices[0].message.content
 
 # --- Root endpoint ---
 @app.get("/")
@@ -93,7 +91,7 @@ async def extract_pdf(file: UploadFile = File(...)):
     text_content = extract_text(temp_path)
 
     if transactions_df is not None:
-        result_json = classify_with_gemini(text_content, include_transactions=False)
+        result_json = classify_with_llm(text_content, include_transactions=False)
         transactions_csv = transactions_df.to_csv(index=False)
         return {
             "account_and_bank_details": result_json,
@@ -101,7 +99,7 @@ async def extract_pdf(file: UploadFile = File(...)):
             "transactions_csv": transactions_csv
         }
     else:
-        result_json = classify_with_gemini(text_content, include_transactions=True)
+        result_json = classify_with_llm(text_content, include_transactions=True)
         return {
             "all_details": result_json
         }

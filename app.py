@@ -3,9 +3,9 @@ import pdfplumber
 import pandas as pd
 import os
 from dotenv import load_dotenv
-from google import genai
 import json
 import re
+from groq import Groq
 
 # Optional fallback libraries
 try:
@@ -19,15 +19,22 @@ except ImportError:
     tabula = None
 
 # Load API key
-load_dotenv()
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
-if not GEMINI_API_KEY:
-    st.error("❌ GOOGLE_API_KEY not found! Set it in .env or Streamlit Secrets.")
+GROQ_API_KEY = None
+
+try:
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+except Exception:
+    pass
+
+if not GROQ_API_KEY:
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if not GROQ_API_KEY:
+    st.error("❌ GROQ_API_KEY not found. Add it to secrets.toml")
     st.stop()
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+groq_client = Groq(api_key=GROQ_API_KEY)
 
-# --- PDF Table Extraction ---
 # --- PDF Table Extraction ---
 def extract_transactions(pdf_file):
     all_rows = []
@@ -59,7 +66,7 @@ def extract_text(pdf_file):
     return text_content
 
 # --- Gemini Classification ---
-def classify_with_gemini(text, include_transactions=False):
+def classify_with_llm(text, include_transactions=False):
     if include_transactions:
         prompt = f"""
         Extract only valid JSON from this bank statement text.
@@ -71,17 +78,19 @@ def classify_with_gemini(text, include_transactions=False):
     else:
         prompt = f"""
         Extract only valid JSON from this bank statement text.
-        Give account holder details and related and bank account details related.
+        Give account holder details related and bank account details related.
         Return keys: account_holder_details, bank_account_details.
         Text:
         {text}
         """
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+    response = groq_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
     )
-    return response.candidates[0].content.parts[0].text
+
+    return response.choices[0].message.content
 
 # --- Robust Gemini JSON Parser ---
 def clean_and_parse_gemini(json_text):
@@ -116,7 +125,7 @@ def render_gemini_tables(json_text):
         st.table(pd.DataFrame([data["bank_account_details"]]))
 
     if "transactions" in data:
-        st.subheader("Transactions Table (Gemini)")
+        st.subheader("Transactions ")
         transactions = data["transactions"]
         if isinstance(transactions, list) and len(transactions) > 0 and isinstance(transactions[0], dict):
             df_trans = pd.DataFrame(transactions)
@@ -144,12 +153,12 @@ if uploaded_file:
         csv = transactions_df.to_csv(index=False).encode("utf-8")
         st.download_button("Download Transactions CSV", csv, "transactions.csv", "text/csv")
 
-        st.subheader("Account Holder & Bank Details (Gemini)")
+        st.subheader("Account Holder & Bank Details")
         with st.spinner("Classifying with Gemini..."):
-            result_json = classify_with_gemini(text_content, include_transactions=False)
+            result_json = classify_with_llm(text_content, include_transactions=False)
             render_gemini_tables(result_json)
     else:
         st.warning("No transactions table found using Python. Using Gemini for all data...")
         with st.spinner("Classifying with Gemini..."):
-            result_json = classify_with_gemini(text_content, include_transactions=True)
+            result_json = classify_with_llm(text_content, include_transactions=True)
             render_gemini_tables(result_json)
