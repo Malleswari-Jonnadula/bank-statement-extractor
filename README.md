@@ -41,7 +41,7 @@ The system combines **rule-based PDF parsing** with **LLM-powered fallback extra
 
 ---
 
-## 1. Local Setup
+## Run Streamlit App Locally
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/Malleswari-Jonnadula/bank-statement-extractor.git
